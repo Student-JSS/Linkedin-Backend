@@ -1,6 +1,14 @@
 const User = require('../models/user');
 const bcryptjs = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library'); 
+const jwt = require('jsonwebtoken');
+
+
+const cookieOptions = {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+};
 
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -24,6 +32,8 @@ exports.loginThroughGmail = async (req,res) => {
                 profile_pic: picture,
             });
         }
+        let jwttoken = jwt.sign({userId: userExist._id}, process.env.JWT_PRIVATE_KEY);
+            res.cookie('token', jwttoken, cookieOptions);
         return res.status(200).json({user: userExist});
 
 
@@ -63,7 +73,11 @@ exports.login =async (req,res) => {
         console.log(userExist);
 
         if(userExist && await bcryptjs.compare(password,userExist.password)){
-            return  res.json({message: "Login successful", success: "yes", data: userExist});
+            let token = jwt.sign({userId: userExist._id}, process.env.JWT_PRIVATE_KEY);
+            res.cookie('token', token, cookieOptions);
+
+            return res.json({message: "Login successful", success: "yes", user: userExist});
+
 
         }else{
             return res.status(400).json({error: "Invalid credentials"});
