@@ -89,3 +89,45 @@ exports.login =async (req,res) => {
 
     }
 }
+
+exports.updateUser = async (req,res) => {
+    try{
+        const {user} = req.body;
+        const isExist = await User.findById(req.user._id);
+        if(!isExist){
+            return res.status(404).json({error: 'User does not exist'});
+        }
+
+        const updateData = await User.findByIdAndUpdate(isExist._id, user);
+        // console.log(updateData);
+
+        const userData = await User.findById(req.user._id);
+        res.status(200).json({message: 'User updated successfully', user: userData});
+    }catch(err){
+        console.log(err);
+        res.status(500).json({error: 'Server error', message:err.message});
+    }   
+}  
+
+exports.getProfileById = async (req,res) => {
+    try{
+        const { id} = req.params;
+        const isExist = await User.findById(id);
+        if(isExist){
+            return res.status(400).json({error: "No such user found"});
+
+        }
+        return res.status(200).json({
+            message: 'User fetched successfully',
+            user: isExist,
+
+        });
+    }catch{
+        console.log(err);
+        res.status(500).json({error: 'Server error', message:err.message});
+    }
+}
+
+exports.logout = async (req,res) => {
+        res.clearCookie('token', cookieOptions).json({message: 'Logged out successfully'});
+}
