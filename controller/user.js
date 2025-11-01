@@ -22,7 +22,7 @@ exports.loginThroughGmail = async (req,res) => {
         });
         const payload = ticket.getPayload();
         const { sub, email, name, picture } = payload;
-        const userExist = await User.findOne({ email});
+        let userExist = await User.findOne({ email});
         if(!userExist){
             //register ne user
             userExist = await User.create({
@@ -37,7 +37,7 @@ exports.loginThroughGmail = async (req,res) => {
         return res.status(200).json({user: userExist});
 
 
-    }catch{
+    }catch(err){
         console.log(err);
         res.status(500).json({error: 'Server error', message:err.message});
     }
@@ -113,7 +113,7 @@ exports.getProfileById = async (req,res) => {
     try{
         const { id} = req.params;
         const isExist = await User.findById(id);
-        if(isExist){
+        if(!isExist){
             return res.status(400).json({error: "No such user found"});
 
         }
